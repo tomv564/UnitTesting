@@ -27,30 +27,33 @@ version = int(subprocess.check_output(["subl", "--version"]).decode('utf8').stri
 
 # sublime Packages directory
 packages_path = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-outdir = os.path.join(packages_path, "User", "UnitTesting", package)
+utdir = os.path.join(packages_path, "User", "UnitTesting")
+outdir = os.path.join(utdir, package)
 if not os.path.isdir(outdir):
     os.makedirs(outdir)
 outfile = os.path.join(outdir, "result")
 coveragefile = os.path.join(outdir, "coverage")
+readyfile = os.path.join(utdir, "ready")
 
-# remove output
+
+# remove files
 if os.path.exists(outfile):
     os.unlink(outfile)
 
 if os.path.exists(coveragefile):
     os.unlink(coveragefile)
 
+if os.path.exists(readyfile):
+    os.unlink(readyfile)
+
 # add schedule
-jpath_dir = os.path.join(packages_path, "User", "UnitTesting")
-jpath = os.path.join(jpath_dir, "schedule.json")
-if not os.path.isdir(jpath_dir):
-    os.makedirs(jpath_dir)
+jpath = os.path.join(utdir, "schedule.json")
 try:
     with open(jpath, 'r') as f:
         schedule = json.load(f)
-except:
+except Exception:
     schedule = []
+
 if not any([s['package'] == package for s in schedule]):
     schedule_info = {
         'package': package,
@@ -67,15 +70,20 @@ if not any([s['package'] == package for s in schedule]):
 with open(jpath, 'w') as f:
     f.write(json.dumps(schedule, ensure_ascii=False, indent=True))
 
-# launch scheduler
-tasks = subprocess.check_output(['ps', 'xw']).decode('utf8')
-sublime_is_running = "Sublime" in tasks or "sublime_text" in tasks
 
-if sublime_is_running:
-    subprocess.Popen(["subl", "-b", "--command", "unit_testing_run_scheduler"])
-else:
-    subprocess.Popen(["subl"])
+print("Wait until Sublime Text API ready")
+startt = time.time()
+while (not os.path.exists(readyfile)):
+    subprocess.Popen(["subl", "-b", "--command", "unit_testing_api_ready"])
+    sys.stdout.write('.')
+    sys.stdout.flush()
+    if time.time() - startt > 60:
+        print("Timeout: Sublime Text is not responding")
+        sys.exit(1)
+    time.sleep(1)
+print("")
 
+subprocess.Popen(["subl", "-b", "--command", "unit_testing_run_scheduler"])
 # wait until the file has something
 print("Wait for Sublime Text response")
 startt = time.time()

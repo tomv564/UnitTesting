@@ -17,16 +17,20 @@ new-variable -name 'UTF8Encoding' -option CONSTANT -scope 'script' `
 # todo(guillermooo): Make this configurable.
 $packagesPath = 'C:\st\Data\Packages'
 $stPath = 'C:\st\sublime_text.exe'
-
-$outDir = "$packagesPath\User\UnitTesting\$PackageToTest"
+$utDir = "$packagesPath\User\UnitTesting"
+$outDir = "$utDir\$PackageToTest"
 $outFile = "$outDir\result"
 $coverageFile = "$outDir\coverage"
+$readyFile = "$utDir\ready"
+
 [void] (new-item -itemtype file $outFile -force)
 
+remove-item $readyFile -force -erroraction silentlycontinue
 remove-item $outFile -force -erroraction silentlycontinue
+remove-item $coverageFile -force -erroraction silentlycontinue
 
 # Configure packages to be tested.
-$jpath = "$packagesPath\User\UnitTesting\schedule.json"
+$jpath = "$utDir\schedule.json"
 if (test-path $jpath) {
     $schedule = convertfrom-json "$(get-content $jpath)"
 }
@@ -57,16 +61,24 @@ if ($found -eq 0) {
 [System.IO.File]::WriteAllText(
     $jpath, (convertto-json $schedule), $UTF8Encoding)
 
-# launch sublime
-$sublimeIsRunning = get-process 'sublime_text' -erroraction silentlycontinue
 
-# XXX(guillermooo): we cannot start the editor minimized?
-if($sublimeIsRunning -eq $null) {
-    start-process $stPath
-} else {
-    start-process $stPath -argumentlist '--command', "unit_testing_run_scheduler"
+write-verbose "Wait until Sublime Text API ready"
+$startTime = get-date
+while (-not (test-path $readyFile)) {
+    start-process $stPath -argumentlist '--command', "unit_testing_api_ready"
+    write-host -nonewline "."
+    if (((get-date) - $startTime).totalseconds -ge 60) {
+        write-host
+        throw "Timeout: Sublime Text is not responding."
+    }
+    start-sleep -seconds 1
 }
+write-host
 
+# launch sublime
+start-process $stPath -argumentlist '--command', "unit_testing_run_scheduler"
+
+write-verbose "Wait for Sublime Text response"
 $startTime = get-date
 while (-not (test-path $outFile) -or (get-item $outFile).length -eq 0) {
     write-host -nonewline "."

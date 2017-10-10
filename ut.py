@@ -18,6 +18,7 @@ sys.modules["unittesting"] = unittesting
 
 from unittesting import (
     UnitTestingRunSchedulerCommand,
+    UnitTestingApiReadyCommand,
     UnitTestingCommand,
     UnitTestingCoverageCommand,
     UnitTestingCurrentFileCommand,
@@ -25,10 +26,4 @@ from unittesting import (
     UnitTestingCurrentPackageCoverageCommand,
     UnitTestingSyntaxCommand,
     UnitTestingColorSchemeCommand,
-    run_scheduler
 )
-
-
-def plugin_loaded():
-    # run the schedule
-    run_scheduler()

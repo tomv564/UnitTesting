@@ -1,6 +1,4 @@
 import os
-import threading
-import time
 import sublime
 import sublime_plugin
 from .utils import JsonFile
@@ -84,16 +82,11 @@ class UnitTestingRunSchedulerCommand(sublime_plugin.ApplicationCommand):
         scheduler.run()
 
 
-def try_running_scheduler():
-    while not UnitTestingRunSchedulerCommand.ready:
-        sublime.set_timeout(
-            lambda: sublime.run_command("unit_testing_run_scheduler"), 1)
-        if UnitTestingRunSchedulerCommand.ready:
-            break
-        else:
-            time.sleep(0.5)
-
-
-def run_scheduler():
-    th = threading.Thread(target=try_running_scheduler)
-    th.start()
+class UnitTestingApiReadyCommand(sublime_plugin.ApplicationCommand):
+    def run(self):
+        file_dir = os.path.join(sublime.packages_path(), "User", "UnitTesting")
+        ready = os.path.join(file_dir, "ready")
+        if not os.path.exists(ready):
+            if not os.path.isdir(file_dir):
+                os.makedirs(file_dir)
+            open(ready, 'a').close()
