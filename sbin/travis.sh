@@ -8,7 +8,10 @@ else
     STP="$HOME/.config/sublime-text-$SUBLIME_TEXT_VERSION/Packages"
 fi
 
+
 Bootstrap() {
+    [ -z "$TRAVIS_OS_NAME" ] || rm -rf "$STP"
+
     if [ "$TRAVIS_OS_NAME" = "linux" ] && [ -z $DISPLAY ]; then
         export DISPLAY=:99.0
         sh -e /etc/init.d/xvfb start || true
