@@ -70,6 +70,11 @@ if not any([s['package'] == package for s in schedule]):
 with open(jpath, 'w') as f:
     f.write(json.dumps(schedule, ensure_ascii=False, indent=True))
 
+# launch scheduler
+tasks = subprocess.check_output(['ps', 'xw']).decode('utf8')
+sublime_is_running = "Sublime" in tasks or "sublime_text" in tasks
+
+print("sublime_is_running:", sublime_is_running)
 
 print("Wait until Sublime Text API ready")
 startt = time.time()
