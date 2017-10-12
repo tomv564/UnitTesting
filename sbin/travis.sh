@@ -27,6 +27,7 @@ Bootstrap() {
             echo "copy the package to sublime package directory"
             mkdir -p "$STP/$PACKAGE"
             cp -r ./ "$STP/$PACKAGE"
+            rm -rf "$STP/$PACKAGE/.git"
         fi
     fi
 
