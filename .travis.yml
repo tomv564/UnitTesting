@@ -33,6 +33,7 @@ install:
     - if [ "$PCINSTALL" == true ]; then sh sbin/travis.sh install_package_control; fi
 
 script:
+    - ps wx
     - sh sbin/travis.sh run_tests --coverage
 
 after_success:

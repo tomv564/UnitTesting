@@ -58,7 +58,9 @@ for i in {1..2}; do
         sleep 5
     done
 
-    pkill "[Ss]ubl" || true
+    killall 'Sublime Text' || true
+    killall 'subl' || true
+    killall 'plugin_host' || true
     sleep 2
     [ -f "$PCH_PATH/success" ] && break
 done
