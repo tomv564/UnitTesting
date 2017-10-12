@@ -54,6 +54,7 @@ Bootstrap() {
 
         echo "download UnitTesting tag: $UNITTESTING_TAG"
         git clone --quiet --depth 1 --branch $UNITTESTING_TAG "$UT_URL" "$UT_PATH"
+        rm -rf "$UT_PATH/.git"
     fi
 
     COV_PATH="$STP/coverage"
